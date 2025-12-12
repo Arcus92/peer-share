@@ -1,0 +1,8 @@
+﻿services:
+  peerShare:
+    image: peershare
+    build:
+      context: .
+      dockerfile: PeerShare/Dockerfile
+    ports:
+      - "8080:80"

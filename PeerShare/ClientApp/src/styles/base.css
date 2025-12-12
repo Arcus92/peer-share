@@ -1,0 +1,9 @@
+main,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  @apply bg-neutral-900 text-white;
+}
