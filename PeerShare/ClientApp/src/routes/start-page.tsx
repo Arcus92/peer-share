@@ -4,10 +4,9 @@ import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
 import { useCallback, useRef, useState } from "react";
-import { Check, Copy, Download, Server, Share, Upload } from "lucide-react";
+import { Copy, Server, Share, Upload } from "lucide-react";
 import { Divider } from "../components/controls/divider.tsx";
-import { Progress } from "../components/controls/progress.tsx";
-import { fileSize } from "../utils/file-size.ts";
+import { FileRequestCard } from "../components/file-request-card.tsx";
 
 const peerConnectionConfig = {
   iceServers: [
@@ -110,49 +109,14 @@ export function StartPage() {
         </Button>
       </Container>
 
-      <Container>
+      <Container className="flex flex-row flex-wrap justify-stretch gap-2">
         {files.map((file) => (
-          <div
+          <FileRequestCard
             key={file.id}
-            className="my-1 p-4 border bg-neutral-800 border-neutral-700 rounded-xl"
-          >
-            <p className="font-bold flex flex-row gap-1 items-center">
-              {file.direction === "incoming" && <Download />}
-              {file.direction === "outgoing" && <Upload />}
-              {file.name}
-            </p>
-            <p>
-              {t("fileType")}: {file.type}
-            </p>
-            <p>
-              {t("fileSize")}: {fileSize(file.length)}
-            </p>
-            <p>
-              {t("loaded")}: {fileSize(file.offset)}
-            </p>
-
-            {file.state !== "ready" && (
-              <Progress value={file.offset} max={file.length} />
-            )}
-
-            {file.direction === "incoming" && file.state === "ready" && (
-              <p>
-                <Button onClick={() => acceptFile(file.id)}>
-                  <Check />
-                  {t("accept")}
-                </Button>
-              </p>
-            )}
-
-            {file.direction === "incoming" && file.state === "completed" && (
-              <p>
-                <Button onClick={() => downloadFile(file.id)}>
-                  <Download />
-                  {t("download")}
-                </Button>
-              </p>
-            )}
-          </div>
+            file={file}
+            accept={acceptFile}
+            download={downloadFile}
+          />
         ))}
       </Container>
     </>
