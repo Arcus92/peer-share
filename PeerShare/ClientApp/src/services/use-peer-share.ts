@@ -98,8 +98,14 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   const RTCMessageFileAccept = 2;
   const RTCMessageFileTransfer = 3;
 
-  //
-  const sendNextFileTransferChunk = useCallback(
+  const RTCChunkBufferSize = 64 * 1024;
+  const RTCMaxBufferSize = 512 * 1024;
+  const RTCMinBufferSize = 32 * 1024;
+
+  const rtcIsSending = useRef(false);
+
+  // Send the next chunk of data to the RTC channel.
+  const sendFileTransferChunk = useCallback(
     (fileTransfer: FileTransfer) => {
       return new Promise<void>((resolve, reject) => {
         if (!fileTransfer.file) {
@@ -107,10 +113,9 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
           return;
         }
 
-        const chunkMaxSize = 256 * 1024;
         const chunkStart = fileTransfer.offset;
         const chunkEnd = Math.min(
-          fileTransfer.offset + chunkMaxSize,
+          fileTransfer.offset + RTCChunkBufferSize,
           fileTransfer.file.size,
         );
 
@@ -150,18 +155,24 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     [sendRtcMessage, fileDispatch],
   );
 
-  const sendNextFileTransfers = useCallback(async () => {
+  // Tires to start the message loop if the RTC buffer is not filled and there are files to send.
+  const trySendFileTransfer = useCallback(async () => {
     if (!rtcDataChannel.current) return;
+    if (rtcIsSending.current) return;
 
-    for (const id in fileTransfers.current) {
-      const fileTransfer = fileTransfers.current[id];
-      if (fileTransfer.state !== "active") continue;
+    rtcIsSending.current = true;
 
-      if (rtcDataChannel.current.bufferedAmount > 1024) break;
+    while (rtcDataChannel.current.bufferedAmount < RTCMaxBufferSize) {
+      const fileTransfer = Object.values(fileTransfers.current).find(
+        (f) => f.state === "active",
+      );
+      if (!fileTransfer) break;
 
-      await sendNextFileTransferChunk(fileTransfer);
+      await sendFileTransferChunk(fileTransfer);
     }
-  }, [sendNextFileTransferChunk]);
+
+    rtcIsSending.current = false;
+  }, [sendFileTransferChunk]);
 
   // Handles incoming file request.
   const handleRtcFileOfferMessage = useCallback(
@@ -194,8 +205,8 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   // The RTC channel buffer is ready to send more data.
   const handleRtcChannelBufferedAmountLow = useCallback(async () => {
     console.log("bufferedAmountLow");
-    await sendNextFileTransfers();
-  }, [sendNextFileTransfers]);
+    await trySendFileTransfer();
+  }, [trySendFileTransfer]);
 
   // The current RTC channel was closed.
   const handleRtcChannelClose = useCallback(() => {
@@ -213,7 +224,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
       fileTransfer.state = "active";
       fileDispatch({ type: "update", id: id });
 
-      await sendNextFileTransfers();
+      await trySendFileTransfer();
     },
     [fileDispatch],
   );
@@ -275,6 +286,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   const setupRtcChannel = useCallback(
     (channel: RTCDataChannel) => {
       channel.binaryType = "arraybuffer";
+      channel.bufferedAmountLowThreshold = RTCMinBufferSize;
       channel.onopen = handleRtcChannelOpen;
       channel.onmessage = handleRtcChannelMessage;
       channel.onclose = handleRtcChannelClose;
