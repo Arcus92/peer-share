@@ -16,7 +16,8 @@
       "ready": "Ready...",
       "listing": "Listing for incoming connections...",
       "connecting": "Connecting to partner...",
-      "connected": "Connected to partner!"
+      "connected": "Connected to partner!",
+      "disconnected": "Connection lost!"
     }
   }
 }

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Copy, Upload } from "lucide-react";
 import { Divider } from "../components/controls/divider.tsx";
 import { FileRequestCard } from "../components/file-request-card.tsx";
+import QRCode from "react-qr-code";
 
 const peerConnectionConfig = {
   iceServers: [
@@ -72,20 +73,26 @@ export function StartPage() {
   return (
     <>
       <Container variant={"dark"}>
-        <h3>{t("peer_share")}</h3>
+        <h3 className="text-3xl">{t("peer_share")}</h3>
       </Container>
 
-      <Container>
-        {t("status")}: {t(`connectionStatus.${state}`)}
+      <Container className="m-2 px-2 py-1 text-sm rounded border border-neutral-800">
+        <strong>{t("status")}</strong>: {t(`connectionStatus.${state}`)}
       </Container>
 
       {state === "listing" && shareUrl && (
-        <Container className="flex flex-row gap-2">
-          <Input readOnly value={shareUrl} />
-          <Button onClick={() => copyShareUrl()}>
-            <Copy />
-          </Button>
-        </Container>
+        <>
+          <Container className="flex flex-row gap-2">
+            <Input readOnly value={shareUrl} />
+            <Button onClick={() => copyShareUrl()}>
+              <Copy />
+            </Button>
+          </Container>
+
+          <Container>
+            <QRCode value={shareUrl} className="p-4 bg-white" />
+          </Container>
+        </>
       )}
 
       <Divider />

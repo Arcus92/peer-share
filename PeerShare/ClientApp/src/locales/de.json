@@ -16,7 +16,8 @@
       "ready": "Bereit...",
       "listing": "Wartet auf eingehende Verbindung...",
       "connecting": "Mit Partner verbinden...",
-      "connected": "Mit Partner verbunden!"
+      "connected": "Mit Partner verbunden!",
+      "disconnected": "Verbindung getrennt!"
     }
   }
 }
