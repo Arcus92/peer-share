@@ -9,6 +9,14 @@
     "download": "Herunterladen",
     "fileType": "Dateityp",
     "fileSize": "Dateigröße",
-    "loaded": "Geladen"
+    "loaded": "Geladen",
+    "status": "Status",
+    "connectionStatus": {
+      "idle": "Wartet",
+      "ready": "Bereit...",
+      "listing": "Wartet auf eingehende Verbindung...",
+      "connecting": "Mit Partner verbinden...",
+      "connected": "Mit Partner verbunden!"
+    }
   }
 }

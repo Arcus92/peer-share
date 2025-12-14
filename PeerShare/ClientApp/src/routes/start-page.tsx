@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
-import { useCallback, useRef, useState } from "react";
-import { Copy, Server, Share, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { Copy, Upload } from "lucide-react";
 import { Divider } from "../components/controls/divider.tsx";
 import { FileRequestCard } from "../components/file-request-card.tsx";
 
@@ -18,6 +18,7 @@ const peerConnectionConfig = {
 export function StartPage() {
   const { t } = useTranslation();
 
+  // The file input used for uploading.
   const inputFile = useRef<HTMLInputElement | null>(null);
 
   const {
@@ -31,24 +32,42 @@ export function StartPage() {
     downloadFile,
   } = usePeerShare(peerConnectionConfig);
 
-  const [connectionId, setConnectionId] = useState<string>("");
-
-  const copyHostId = useCallback(async () => {
-    if (!hostId) return;
-    await navigator.clipboard.writeText(hostId);
+  // Builds the sharable URL.
+  const shareUrl = useMemo(() => {
+    if (!hostId) return "";
+    return `${window.location}#${hostId}`;
   }, [hostId]);
 
+  // Copies the shareable URL.
+  const copyShareUrl = useCallback(async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+  }, [shareUrl]);
+
+  // Shows the file selector to upload.
   const showFileUpload = useCallback(async () => {
     if (!inputFile.current) return;
-
     inputFile.current.click();
   }, []);
 
+  // Uploads a file and shares it to the RTC connection.
   const uploadFile = useCallback(async () => {
     if (!inputFile.current) return;
     if (!inputFile.current.files) return;
     await offerFiles(inputFile.current.files);
   }, []);
+
+  useEffect(() => {
+    if (state !== "ready") return;
+    if (window.location.hash) {
+      console.log("CONNECT", window.location.hash);
+      const hash = window.location.hash.substring(1);
+      connect(hash).then();
+    } else {
+      console.log("HOST");
+      host().then();
+    }
+  }, [state]);
 
   return (
     <>
@@ -56,39 +75,18 @@ export function StartPage() {
         <h3>{t("peer_share")}</h3>
       </Container>
 
-      <Container>State: {state}</Container>
-
-      <Container className="flex flex-row gap-2">
-        <Button disabled={state !== "idle"} onClick={() => host()}>
-          <Server />
-          {t("host")}
-        </Button>
-
-        {hostId && (
-          <>
-            <Input readOnly value={hostId} />
-            <Button onClick={() => copyHostId()}>
-              <Copy />
-            </Button>
-          </>
-        )}
+      <Container>
+        {t("status")}: {t(`connectionStatus.${state}`)}
       </Container>
 
-      <Container className="flex flex-row gap-2">
-        <Input
-          disabled={state !== "idle"}
-          value={connectionId}
-          placeholder={t("connectionId")}
-          onChange={(ev) => setConnectionId(ev.target.value)}
-        />
-        <Button
-          disabled={state !== "idle" || !connectionId}
-          onClick={() => connect(connectionId)}
-        >
-          <Share />
-          {t("connect")}
-        </Button>
-      </Container>
+      {state === "listing" && shareUrl && (
+        <Container className="flex flex-row gap-2">
+          <Input readOnly value={shareUrl} />
+          <Button onClick={() => copyShareUrl()}>
+            <Copy />
+          </Button>
+        </Container>
+      )}
 
       <Divider />
 

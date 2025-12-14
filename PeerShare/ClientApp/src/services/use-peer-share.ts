@@ -16,6 +16,7 @@ import { BinaryReader } from "../utils/binary-reader.ts";
 
 export type Status =
   | "idle"
+  | "ready"
   | "listing"
   | "connecting"
   | "connected"
@@ -328,8 +329,8 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
 
   // Callback when the web-socket connection was opened.
   const handleWebSocketOpen = useCallback(() => {
-    console.log("Connected to web-socket!");
-  }, []);
+    setState("ready");
+  }, [setState]);
 
   // Callback when the web-socket connection was closed.
   const handleWebSocketClose = useCallback(() => {
