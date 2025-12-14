@@ -5,6 +5,10 @@
     "connect": "Connect",
     "connectionId": "Partner ID",
     "uploadFiles": "Upload files",
-    "download": "Download"
+    "accept": "Accept",
+    "download": "Download",
+    "fileType": "File type",
+    "fileSize": "File size",
+    "loaded": "Loaded"
   }
 }

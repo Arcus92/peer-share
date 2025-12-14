@@ -107,7 +107,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
           return;
         }
 
-        const chunkMaxSize = 16 * 1024;
+        const chunkMaxSize = 256 * 1024;
         const chunkStart = fileTransfer.offset;
         const chunkEnd = Math.min(
           fileTransfer.offset + chunkMaxSize,
@@ -232,21 +232,12 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
 
       fileTransfer.buffer.set(data, offset);
       fileTransfer.offset = offset + length;
-      fileDispatch({ type: "update", id: fileTransfer.id });
 
       if (fileTransfer.offset === fileTransfer.length) {
         fileTransfer.state = "completed";
-        fileDispatch({ type: "update", id: fileTransfer.id });
-
-        const blob = new Blob([fileTransfer.buffer], {
-          type: fileTransfer.type,
-        });
-
-        const a = document.createElement("a");
-        a.download = fileTransfer.name;
-        a.href = URL.createObjectURL(blob);
-        a.click();
       }
+
+      fileDispatch({ type: "update", id: fileTransfer.id });
     },
     [],
   );
@@ -498,6 +489,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
 
       fileTransfer.state = "active";
       fileTransfer.buffer = new Uint8Array(fileTransfer.length);
+      fileDispatch({ type: "update", id: id });
 
       const writer = new BinaryWriter();
       writer.writeUint8(RTCMessageFileAccept);
@@ -507,6 +499,22 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     [sendRtcMessage],
   );
 
+  // Downloads a completed file from the buffer.
+  const downloadFile = useCallback((id: string) => {
+    const fileTransfer = fileTransfers.current[id];
+    if (!fileTransfer) return;
+    if (fileTransfer.state !== "completed" || !fileTransfer.buffer) return;
+
+    const blob = new Blob([fileTransfer.buffer], {
+      type: fileTransfer.type,
+    });
+
+    const a = document.createElement("a");
+    a.download = fileTransfer.name;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+  }, []);
+
   return {
     state,
     hostId,
@@ -515,5 +523,6 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     connect,
     offerFiles,
     acceptFile,
+    downloadFile,
   };
 }

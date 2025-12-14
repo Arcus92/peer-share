@@ -4,9 +4,10 @@ import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
 import { useCallback, useRef, useState } from "react";
-import { Copy, Download, Server, Share, Upload } from "lucide-react";
+import { Check, Copy, Download, Server, Share, Upload } from "lucide-react";
 import { Divider } from "../components/controls/divider.tsx";
 import { Progress } from "../components/controls/progress.tsx";
+import { fileSize } from "../utils/file-size.ts";
 
 const peerConnectionConfig = {
   iceServers: [
@@ -20,8 +21,16 @@ export function StartPage() {
 
   const inputFile = useRef<HTMLInputElement | null>(null);
 
-  const { state, hostId, files, host, connect, offerFiles, acceptFile } =
-    usePeerShare(peerConnectionConfig);
+  const {
+    state,
+    hostId,
+    files,
+    host,
+    connect,
+    offerFiles,
+    acceptFile,
+    downloadFile,
+  } = usePeerShare(peerConnectionConfig);
 
   const [connectionId, setConnectionId] = useState<string>("");
 
@@ -107,25 +116,41 @@ export function StartPage() {
             key={file.id}
             className="my-1 p-4 border bg-neutral-800 border-neutral-700 rounded-xl"
           >
-            <p className="font-bold">{file.name}</p>
-            <p>{file.direction}</p>
-            <p>{file.length} bytes</p>
-            <p>{file.type}</p>
-            <p>
-              {file.state} ({file.offset} / {file.length})
+            <p className="font-bold flex flex-row gap-1 items-center">
+              {file.direction === "incoming" && <Download />}
+              {file.direction === "outgoing" && <Upload />}
+              {file.name}
             </p>
+            <p>
+              {t("fileType")}: {file.type}
+            </p>
+            <p>
+              {t("fileSize")}: {fileSize(file.length)}
+            </p>
+            <p>
+              {t("loaded")}: {fileSize(file.offset)}
+            </p>
+
+            {file.state !== "ready" && (
+              <Progress value={file.offset} max={file.length} />
+            )}
 
             {file.direction === "incoming" && file.state === "ready" && (
               <p>
                 <Button onClick={() => acceptFile(file.id)}>
-                  <Download />
-                  {t("download")}
+                  <Check />
+                  {t("accept")}
                 </Button>
               </p>
             )}
 
-            {file.state !== "ready" && (
-              <Progress value={file.offset} max={file.length} />
+            {file.direction === "incoming" && file.state === "completed" && (
+              <p>
+                <Button onClick={() => downloadFile(file.id)}>
+                  <Download />
+                  {t("download")}
+                </Button>
+              </p>
             )}
           </div>
         ))}
