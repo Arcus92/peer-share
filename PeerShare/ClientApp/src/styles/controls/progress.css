@@ -1,0 +1,11 @@
+.progress-root {
+    @apply w-full h-2 appearance-none;
+    
+    &, &::-webkit-progress-bar {
+        @apply bg-neutral-700 rounded-xl border border-neutral-600;
+    }
+    
+    &::-moz-progress-bar, &::-webkit-progress-value  {
+        @apply bg-green-400 rounded-xl;
+    }
+}

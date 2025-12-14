@@ -6,6 +6,7 @@ import { usePeerShare } from "../services/use-peer-share.ts";
 import { useCallback, useRef, useState } from "react";
 import { Copy, Download, Server, Share, Upload } from "lucide-react";
 import { Divider } from "../components/controls/divider.tsx";
+import { Progress } from "../components/controls/progress.tsx";
 
 const peerConnectionConfig = {
   iceServers: [
@@ -121,6 +122,10 @@ export function StartPage() {
                   {t("download")}
                 </Button>
               </p>
+            )}
+
+            {file.state !== "ready" && (
+              <Progress value={file.offset} max={file.length} />
             )}
           </div>
         ))}
