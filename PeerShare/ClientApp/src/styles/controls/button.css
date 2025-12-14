@@ -1,5 +1,5 @@
 .btn-root {
-  @apply outline-none flex flex-row items-center gap-2 px-4 py-2 text-sm bg-neutral-700 hover:bg-neutral-800 rounded-sm cursor-pointer transition;
+  @apply outline-none flex flex-row items-center gap-2 px-4 py-2 text-sm bg-neutral-700 hover:bg-neutral-600 rounded-sm cursor-pointer transition;
   
   &:disabled {
     @apply opacity-50 pointer-events-none;

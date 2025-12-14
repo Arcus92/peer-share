@@ -3,6 +3,8 @@
     "peer_share": "Peer Share",
     "host": "Host",
     "connect": "Connect",
-    "connectionId": "Partner ID"
+    "connectionId": "Partner ID",
+    "uploadFiles": "Upload files",
+    "download": "Download"
   }
 }

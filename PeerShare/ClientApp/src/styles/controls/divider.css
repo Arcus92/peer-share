@@ -1,0 +1,3 @@
+.divider-root {
+    @apply border-neutral-800 m-2;
+}

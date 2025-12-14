@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
-import { useCallback, useState } from "react";
-import { Copy, Server, Share } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { Copy, Download, Server, Share, Upload } from "lucide-react";
+import { Divider } from "../components/controls/divider.tsx";
 
 const peerConnectionConfig = {
   iceServers: [
@@ -15,7 +16,11 @@ const peerConnectionConfig = {
 
 export function StartPage() {
   const { t } = useTranslation();
-  const { state, hostId, host, connect } = usePeerShare(peerConnectionConfig);
+
+  const inputFile = useRef<HTMLInputElement | null>(null);
+
+  const { state, hostId, files, host, connect, offerFiles, acceptFile } =
+    usePeerShare(peerConnectionConfig);
 
   const [connectionId, setConnectionId] = useState<string>("");
 
@@ -23,6 +28,18 @@ export function StartPage() {
     if (!hostId) return;
     await navigator.clipboard.writeText(hostId);
   }, [hostId]);
+
+  const showFileUpload = useCallback(async () => {
+    if (!inputFile.current) return;
+
+    inputFile.current.click();
+  }, []);
+
+  const uploadFile = useCallback(async () => {
+    if (!inputFile.current) return;
+    if (!inputFile.current.files) return;
+    await offerFiles(inputFile.current.files);
+  }, []);
 
   return (
     <>
@@ -62,6 +79,51 @@ export function StartPage() {
           <Share />
           {t("connect")}
         </Button>
+      </Container>
+
+      <Divider />
+
+      <Container className="flex flex-row gap-2">
+        <input
+          type="file"
+          multiple
+          className="hidden"
+          ref={inputFile}
+          onChange={() => uploadFile()}
+        />
+        <Button
+          disabled={state !== "connected"}
+          onClick={() => showFileUpload()}
+        >
+          <Upload />
+          {t("uploadFiles")}
+        </Button>
+      </Container>
+
+      <Container>
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="my-1 p-4 border bg-neutral-800 border-neutral-700 rounded-xl"
+          >
+            <p className="font-bold">{file.name}</p>
+            <p>{file.direction}</p>
+            <p>{file.length} bytes</p>
+            <p>{file.type}</p>
+            <p>
+              {file.state} ({file.offset} / {file.length})
+            </p>
+
+            {file.direction === "incoming" && file.state === "ready" && (
+              <p>
+                <Button onClick={() => acceptFile(file.id)}>
+                  <Download />
+                  {t("download")}
+                </Button>
+              </p>
+            )}
+          </div>
+        ))}
       </Container>
     </>
   );
