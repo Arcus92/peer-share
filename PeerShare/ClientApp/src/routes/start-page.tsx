@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Cable, Copy, QrCode, Upload } from "lucide-react";
 import { FileRequestCard } from "../components/file-request-card.tsx";
 import QRCode from "react-qr-code";
@@ -56,6 +56,25 @@ export function StartPage() {
     if (!inputFile.current.files) return;
     await offerFiles(inputFile.current.files);
   }, []);
+
+  // Handling pasting files from clipboard.
+  const handlePaste = useCallback(
+    async (ev: ClipboardEvent) => {
+      ev.stopImmediatePropagation();
+      console.log("handlePaste:", state, ev.clipboardData?.files);
+      if (state !== "connected") return;
+      if (!ev.clipboardData?.files) return;
+      await offerFiles(ev.clipboardData.files);
+    },
+    [state, offerFiles],
+  );
+
+  useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, [handlePaste]);
 
   const clientId = useMemo<string | undefined>(() => {
     if (window.location.hash) {
