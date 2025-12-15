@@ -78,27 +78,26 @@ public class WebSocketClient : IDisposable
                 break;
             
             case ConnectionRequestMessage connectionMessage:
-                if (!_webSocketService.TryGetClientByHostId(connectionMessage.ConnectionId, out var host))
+                if (!_webSocketService.TryGetClientByHostId(connectionMessage.ConnectionId, out var host) ||
+                    host._partner is not null || 
+                    host._description is null || 
+                    host._iceCandidates.Count == 0)
+                {
+                    await SendAsync(new ConnectionResponseMessage
+                    {
+                        Success = false
+                    }, cancellationToken);
                     return;
-
-                // Client is already connected
-                if (host._partner is not null)
-                    return;
-                
-                var hostDescription = host._description;
-                var hostIceCandidates = host._iceCandidates.ToArray();
-                
-                // Client is not hosting
-                if (hostDescription is null || hostIceCandidates.Length == 0)
-                    return;
+                }
 
                 _partner = host;
                 host._partner = this;
                 
                 await SendAsync(new ConnectionResponseMessage
                 {
-                    RemoteDescription = hostDescription,
-                    IceCandidates = hostIceCandidates
+                    Success = true,
+                    RemoteDescription = host._description,
+                    IceCandidates = host._iceCandidates.ToArray()
                 }, cancellationToken);
                 break;
             

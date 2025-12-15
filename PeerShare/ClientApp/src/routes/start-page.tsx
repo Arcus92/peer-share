@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../components/controls/button.tsx";
 import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Copy, Upload } from "lucide-react";
+import { useCallback, useMemo, useRef } from "react";
+import { Cable, Copy, QrCode, Upload } from "lucide-react";
 import { FileRequestCard } from "../components/file-request-card.tsx";
 import QRCode from "react-qr-code";
 
@@ -57,15 +57,11 @@ export function StartPage() {
     await offerFiles(inputFile.current.files);
   }, []);
 
-  useEffect(() => {
-    if (state !== "ready") return;
+  const clientId = useMemo<string | undefined>(() => {
     if (window.location.hash) {
-      const hash = window.location.hash.substring(1);
-      connect(hash).then();
-    } else {
-      host().then();
+      return window.location.hash.substring(1);
     }
-  }, [state]);
+  }, []);
 
   return (
     <>
@@ -77,10 +73,25 @@ export function StartPage() {
         <strong>{t("status")}</strong>: {t(`connectionStatus.${state}`)}
       </Container>
 
+      {state === "ready" && (
+        <Container>
+          {!clientId && (
+            <Button onClick={() => host()}>
+              <QrCode /> {t("createSession")}
+            </Button>
+          )}
+          {clientId && (
+            <Button onClick={() => connect(clientId)}>
+              <Cable /> {t("joinSession")}
+            </Button>
+          )}
+        </Container>
+      )}
+
       {state === "listing" && shareUrl && (
         <>
-          <Container className="flex flex-row gap-2">
-            <Input readOnly value={shareUrl} />
+          <Container className="flex flex-row gap-2 w-full">
+            <Input readOnly value={shareUrl} className="grow" />
             <Button onClick={() => copyShareUrl()}>
               <Copy />
             </Button>
@@ -92,33 +103,34 @@ export function StartPage() {
         </>
       )}
 
-      <Container className="flex flex-row flex-wrap justify-stretch gap-2">
-        {files.map((file) => (
-          <FileRequestCard
-            key={file.id}
-            file={file}
-            accept={acceptFile}
-            download={downloadFile}
+      {state === "connected" && (
+        <Container className="flex flex-row gap-2">
+          <input
+            type="file"
+            multiple
+            className="hidden"
+            ref={inputFile}
+            onChange={() => uploadFile()}
           />
-        ))}
-      </Container>
+          <Button onClick={() => showFileUpload()}>
+            <Upload />
+            {t("uploadFiles")}
+          </Button>
+        </Container>
+      )}
 
-      <Container className="flex flex-row gap-2">
-        <input
-          type="file"
-          multiple
-          className="hidden"
-          ref={inputFile}
-          onChange={() => uploadFile()}
-        />
-        <Button
-          disabled={state !== "connected"}
-          onClick={() => showFileUpload()}
-        >
-          <Upload />
-          {t("uploadFiles")}
-        </Button>
-      </Container>
+      {files.length > 0 && (
+        <Container className="flex flex-row flex-wrap justify-stretch gap-2">
+          {files.map((file) => (
+            <FileRequestCard
+              key={file.id}
+              file={file}
+              accept={acceptFile}
+              download={downloadFile}
+            />
+          ))}
+        </Container>
+      )}
     </>
   );
 }

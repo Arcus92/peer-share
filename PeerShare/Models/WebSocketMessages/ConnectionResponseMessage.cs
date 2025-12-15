@@ -4,12 +4,17 @@ namespace PeerShare.Models.WebSocketMessages;
 public class ConnectionResponseMessage : IWebSocketMessage
 {
     /// <summary>
+    /// Gets and sets if the connection request was successful.
+    /// </summary>
+    public required bool Success { get; set; }
+
+    /// <summary>
     /// Gets and sets the remote RTC description for the requested connection.
     /// </summary>
-    public required string RemoteDescription { get; set; }
-    
+    public string RemoteDescription { get; set; } = "";
+
     /// <summary>
     /// Gets and sets the list of ICE candidates.
     /// </summary>
-    public required string[] IceCandidates { get; set; }
+    public string[] IceCandidates { get; set; } = [];
 }

@@ -25,6 +25,7 @@ export type ConnectionRequestMessageDto = {
 // Server -> Client: Shares the remote description with the client.
 export type ConnectionResponseMessageDto = {
   $type: "connectionResponse";
+  success: boolean;
   remoteDescription: string;
   iceCandidates: string[];
 };

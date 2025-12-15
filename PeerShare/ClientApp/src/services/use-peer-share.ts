@@ -372,6 +372,11 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   // Handles the response message from the server.
   const handleConnectionResponseMessage = useCallback(
     async (message: ConnectionResponseMessageDto) => {
+      if (!message.success) {
+        setState("failed");
+        return;
+      }
+
       if (!rtcConnection.current) return;
 
       const offer = new RTCSessionDescription(
@@ -392,7 +397,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
         localDescription: JSON.stringify(answer),
       });
     },
-    [sendWebSocketMessage],
+    [sendWebSocketMessage, setState],
   );
 
   // Handles the answer response message from the server.
