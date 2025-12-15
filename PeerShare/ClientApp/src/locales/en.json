@@ -5,6 +5,7 @@
     "connect": "Connect",
     "connectionId": "Partner ID",
     "uploadFiles": "Upload files",
+    "orPasteFile": "or paste files via CTRL+V.",
     "accept": "Accept",
     "download": "Download",
     "saveFile": "Save file",

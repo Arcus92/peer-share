@@ -127,7 +127,7 @@ export function StartPage() {
       )}
 
       {state === "connected" && (
-        <Container className="flex flex-row gap-2">
+        <Container className="flex flex-row gap-2 items-center">
           <input
             type="file"
             multiple
@@ -139,6 +139,9 @@ export function StartPage() {
             <Upload />
             {t("uploadFiles")}
           </Button>
+          <span className="italic text-sm text-neutral-500">
+            {t("orPasteFile")}
+          </span>
         </Container>
       )}
 
