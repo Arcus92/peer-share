@@ -201,6 +201,11 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   // A new RTC channel was created.
   const handleRtcChannelOpen = useCallback(() => {
     setState("connected");
+
+    // Web socket is no longer needed
+    if (webSocket.current) {
+      webSocket.current.close();
+    }
   }, [setState]);
 
   // The RTC channel buffer is ready to send more data.
@@ -288,10 +293,14 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     (channel: RTCDataChannel) => {
       channel.binaryType = "arraybuffer";
       channel.bufferedAmountLowThreshold = RTCMinBufferSize;
-      channel.onopen = handleRtcChannelOpen;
-      channel.onmessage = handleRtcChannelMessage;
-      channel.onclose = handleRtcChannelClose;
-      channel.onbufferedamountlow = handleRtcChannelBufferedAmountLow;
+
+      channel.addEventListener("open", handleRtcChannelOpen);
+      channel.addEventListener("message", handleRtcChannelMessage);
+      channel.addEventListener("close", handleRtcChannelClose);
+      channel.addEventListener(
+        "bufferedamountlow",
+        handleRtcChannelBufferedAmountLow,
+      );
       rtcDataChannel.current = channel;
     },
     [handleRtcChannelMessage, handleRtcChannelClose],
@@ -302,6 +311,11 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     (ev: RTCDataChannelEvent) => {
       setupRtcChannel(ev.channel);
       setState("connected");
+
+      // Web socket is no longer needed
+      if (webSocket.current) {
+        webSocket.current.close();
+      }
     },
     [setState, setupRtcChannel],
   );
@@ -309,11 +323,13 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   // Creating an RTC connection.
   useEffect(() => {
     const connection = new RTCPeerConnection(peerConnectionConfig);
-    connection.onicecandidate = handleIceCandidate;
-    connection.ondatachannel = handleRtcChannelAdd;
+    connection.addEventListener("icecandidate", handleIceCandidate);
+    connection.addEventListener("datachannel", handleRtcChannelAdd);
     rtcConnection.current = connection;
 
     return () => {
+      connection.removeEventListener("icecandidate", handleIceCandidate);
+      connection.removeEventListener("datachannel", handleRtcChannelAdd);
       connection.close();
     };
   }, []);
@@ -335,7 +351,13 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
   // Callback when the web-socket connection was closed.
   const handleWebSocketClose = useCallback(() => {
     setHostId("");
-    //webSocket.current = undefined;
+    webSocket.current = undefined;
+
+    // Web socket can be closed if an RTC connection was established.
+    if (!rtcDataChannel.current) {
+      setState("failed");
+    }
+
     console.error("Web socket closed");
   }, [setHostId]);
 
@@ -418,14 +440,17 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
 
   // Opening the web-socket connection
   useEffect(() => {
-    const ws = new WebSocket(
-      `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:${location.port}/ws`,
-    );
-    ws.onopen = handleWebSocketOpen;
-    ws.onclose = handleWebSocketClose;
-    ws.onmessage = handleWebSocketMessage;
+    const wsUrl = `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:${location.port}/ws`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.addEventListener("open", handleWebSocketOpen);
+    ws.addEventListener("close", handleWebSocketClose);
+    ws.addEventListener("message", handleWebSocketMessage);
     webSocket.current = ws;
     return () => {
+      ws.removeEventListener("open", handleWebSocketOpen);
+      ws.removeEventListener("close", handleWebSocketClose);
+      ws.removeEventListener("message", handleWebSocketMessage);
       ws.close();
     };
   }, []);
@@ -463,6 +488,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     [sendWebSocketMessage],
   );
 
+  // Sends the given file list to the RTC partner.
   const offerFiles = useCallback(
     async (fileList: FileList) => {
       for (const file of fileList) {
@@ -494,7 +520,7 @@ export function usePeerShare(peerConnectionConfig: RTCConfiguration) {
     [fileDispatch, sendRtcMessage],
   );
 
-  // Accepts a file to download
+  // Accepts a file to download.
   const acceptFile = useCallback(
     async (id: string) => {
       const fileTransfer = fileTransfers.current[id];
