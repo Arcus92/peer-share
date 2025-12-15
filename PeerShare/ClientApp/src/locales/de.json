@@ -7,6 +7,7 @@
     "uploadFiles": "Dateien hochladen",
     "accept": "Akzeptieren",
     "download": "Herunterladen",
+    "saveFile": "Datei speichern",
     "fileType": "Dateityp",
     "fileSize": "Dateigröße",
     "loaded": "Geladen",
@@ -17,7 +18,8 @@
       "listing": "Wartet auf eingehende Verbindung...",
       "connecting": "Mit Partner verbinden...",
       "connected": "Mit Partner verbunden!",
-      "disconnected": "Verbindung getrennt!"
+      "disconnected": "Verbindung getrennt!",
+      "failed": "Fehlgeschlagen!"
     }
   }
 }

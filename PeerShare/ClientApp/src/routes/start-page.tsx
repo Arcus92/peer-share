@@ -5,7 +5,6 @@ import { Input } from "../components/controls/input.tsx";
 import { usePeerShare } from "../services/use-peer-share.ts";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Copy, Upload } from "lucide-react";
-import { Divider } from "../components/controls/divider.tsx";
 import { FileRequestCard } from "../components/file-request-card.tsx";
 import QRCode from "react-qr-code";
 
@@ -61,11 +60,9 @@ export function StartPage() {
   useEffect(() => {
     if (state !== "ready") return;
     if (window.location.hash) {
-      console.log("CONNECT", window.location.hash);
       const hash = window.location.hash.substring(1);
       connect(hash).then();
     } else {
-      console.log("HOST");
       host().then();
     }
   }, [state]);
@@ -95,7 +92,16 @@ export function StartPage() {
         </>
       )}
 
-      <Divider />
+      <Container className="flex flex-row flex-wrap justify-stretch gap-2">
+        {files.map((file) => (
+          <FileRequestCard
+            key={file.id}
+            file={file}
+            accept={acceptFile}
+            download={downloadFile}
+          />
+        ))}
+      </Container>
 
       <Container className="flex flex-row gap-2">
         <input
@@ -112,17 +118,6 @@ export function StartPage() {
           <Upload />
           {t("uploadFiles")}
         </Button>
-      </Container>
-
-      <Container className="flex flex-row flex-wrap justify-stretch gap-2">
-        {files.map((file) => (
-          <FileRequestCard
-            key={file.id}
-            file={file}
-            accept={acceptFile}
-            download={downloadFile}
-          />
-        ))}
       </Container>
     </>
   );

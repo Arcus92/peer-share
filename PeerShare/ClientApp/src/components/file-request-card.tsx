@@ -53,7 +53,7 @@ export function FileRequestCard({ file, accept, download, ...props }: Props) {
           {file.state === "completed" && (
             <Button onClick={() => download(file.id)}>
               <Download />
-              {t("download")}
+              {t("saveFile")}
             </Button>
           )}
         </p>

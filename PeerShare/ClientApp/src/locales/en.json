@@ -7,6 +7,7 @@
     "uploadFiles": "Upload files",
     "accept": "Accept",
     "download": "Download",
+    "saveFile": "Save file",
     "fileType": "File type",
     "fileSize": "File size",
     "loaded": "Loaded",
@@ -17,7 +18,8 @@
       "listing": "Listing for incoming connections...",
       "connecting": "Connecting to partner...",
       "connected": "Connected to partner!",
-      "disconnected": "Connection lost!"
+      "disconnected": "Connection lost!",
+      "failed": "Failed!"
     }
   }
 }
