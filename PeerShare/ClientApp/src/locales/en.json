@@ -22,6 +22,7 @@
       "connected": "Connected to partner!",
       "disconnected": "Connection lost!",
       "failed": "Failed!"
-    }
+    },
+    "warningTrustConnection": "Please only proceed if you trust the person who send this link. Do not accept files from unknown sources!"
   }
 }

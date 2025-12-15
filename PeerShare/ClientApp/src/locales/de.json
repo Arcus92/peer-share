@@ -22,6 +22,7 @@
       "connected": "Mit Partner verbunden!",
       "disconnected": "Verbindung getrennt!",
       "failed": "Fehlgeschlagen!"
-    }
+    },
+    "warningTrustConnection": "Bitte fahren Sie nur fort, wenn Sie der Person vertrauen, die Ihnen diesen Link geschickt hat. Nehmen Sie keine Dateien aus unbekannten Quellen an!"
   }
 }

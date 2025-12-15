@@ -88,6 +88,10 @@ export function StartPage() {
         <h3 className="text-3xl">{t("peer_share")}</h3>
       </Container>
 
+      <Container className="m-2 px-2 py-1 text-sm rounded border border-orange-800 bg-orange-700 text-white font-bold">
+        {t("warningTrustConnection")}
+      </Container>
+
       <Container className="m-2 px-2 py-1 text-sm rounded border border-neutral-800">
         <strong>{t("status")}</strong>: {t(`connectionStatus.${state}`)}
       </Container>
